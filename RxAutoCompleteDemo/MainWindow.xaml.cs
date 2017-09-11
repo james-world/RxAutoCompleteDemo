@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Humanizer;
 using RxAutoCompleteDemo.Model;
 using RxAutoCompleteDemo.Services;
@@ -27,12 +29,16 @@ namespace RxAutoCompleteDemo
             Observable.FromEventPattern<TextChangedEventArgs>(Input, "TextChanged")
                 .Select(@event => ((TextBox) @event.Sender).Text)
                 .Throttle(0.5.Seconds()).ObserveOnDispatcher()
-                .SelectMany(term => Observable.FromAsync(() => _autoCompleteService.Query(term))
+                .Do(_ => ClearMatches())
+                .Where(term => term?.Length > 2)
+                .Do(_ => SetWaiting())
+                .Select(term => Observable.FromAsync(() => _autoCompleteService.Query(term))
                     .Timeout(2.Seconds(), Observable.Return(AutoCompleteResult.ErrorResult(term, "timed out")))
                     .Retry(3)
                     .Catch(Observable.Return(AutoCompleteResult.ErrorResult(term)))
                     .ObserveOnDispatcher()
                 )
+                .Switch()
                 .Subscribe(DisplayMatches);
         }
 
