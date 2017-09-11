@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Humanizer;
@@ -25,8 +26,8 @@ namespace RxAutoCompleteDemo
 
             Observable.FromEventPattern<TextChangedEventArgs>(Input, "TextChanged")
                 .Select(@event => ((TextBox) @event.Sender).Text)                
-                .SelectMany(_autoCompleteService.Query)
-                .ObserveOnDispatcher()
+                .Select(term => _autoCompleteService.Query(term).ToObservable().ObserveOnDispatcher())
+                .Switch()
                 .Subscribe(DisplayMatches);
         }
 
