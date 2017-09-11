@@ -29,6 +29,7 @@ namespace RxAutoCompleteDemo
                 .Select(@event => ((TextBox) @event.Sender).Text)                
                 .Select(term => _autoCompleteService.Query(term)
                     .ToObservable()
+                    .Timeout(2.Seconds(), Observable.Return(AutoCompleteResult.ErrorResult(term, "timed out")))
                     .Catch(Observable.Return(AutoCompleteResult.ErrorResult(term)))
                     .ObserveOnDispatcher()
                 )
