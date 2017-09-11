@@ -23,8 +23,10 @@ namespace RxAutoCompleteDemo
             InitializeComponent();
 
             Observable.FromEventPattern<TextChangedEventArgs>(Input, "TextChanged")
-                .Select(@event => ((TextBox) @event.Sender).Text)
-                .Subscribe(text => DisplayMatches(AutoCompleteResult.EchoResult(text)));
+                .Select(@event => ((TextBox) @event.Sender).Text)                
+                .SelectMany(_autoCompleteService.Query)
+                .ObserveOnDispatcher()
+                .Subscribe(DisplayMatches);
         }
 
         private void DisplayMatches(AutoCompleteResult result)
