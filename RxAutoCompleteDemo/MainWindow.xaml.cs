@@ -30,6 +30,7 @@ namespace RxAutoCompleteDemo
                 .Select(term => _autoCompleteService.Query(term)
                     .ToObservable()
                     .Timeout(2.Seconds(), Observable.Return(AutoCompleteResult.ErrorResult(term, "timed out")))
+                    .Retry(3)
                     .Catch(Observable.Return(AutoCompleteResult.ErrorResult(term)))
                     .ObserveOnDispatcher()
                 )
