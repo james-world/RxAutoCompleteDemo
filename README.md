@@ -1,18 +1,18 @@
-#RxAutoCompleteDemo
+# RxAutoCompleteDemo
 
 This repository demonstrates a typical [*Reactive Extensions*](http://reactivex.io) (Rx) client-side scenario. We will use Rx to create a robust pipeline for calling a service.
 
 The repository has a number of lightweight tags that move through each stage of the demo - these tags appear at the start of each numbered section below. Once you have cloned the repo, you can checkout each tag in sequence to follow the demo along with `git checkout <tag>`. However, if you are tweaking the code for experimental purposes, use `git reset --hard <tag>` to throw away any changes as you move to each tag.
 
-Although this demo uses .NET 4.6.1, WPF and Rx.NET 2.2.5, the concepts demonstrated are application to all of the many platforms to which Reactive Extensions has been translated. The use of WPF here is not really important.
+Although this demo uses .NET 4.6.1, WPF and Rx.NET 2.2.5, the concepts demonstrated are applicable to all of the many platforms to which Reactive Extensions has been translated. The use of WPF here is not really important.
 
 We use the `Humanizer` nuget package in this demo which has some nice extension methods, including allowing us to write `2.Seconds()` instead of the unwieldy `TimeSpan.FromSeconds(2)`.
 
-###1. `tag: demo_start`
+### 1. `tag: demo_start`
 
 A simple WPF application with a TextBox (`Input`) and a ListView (`Results`) below it. You can type into the TextBox, but nothing happens.
 
-###2. `tag: echo_text`
+### 2. `tag: echo_text`
 
 Add `Observable.FromEventPattern` to convert the TextBox's `TextChanged` event into an `IObservable<TextChangedEventArgs>` stream.
 
@@ -20,7 +20,7 @@ Each `OnNext` event is triggered by a text change contains the `TextChanged` eve
 
 The `Select` following converts the stream to an `IObservable<string>` by fetching the content of the textbox. Finally, we `Subscribe` to the steam and echo the text into the `Results` ListView. Run the code and try typing some text. 
 
-###3. `tag: call_service`
+### 3. `tag: call_service`
 
 Now we will call our `InMemoryAutoCompleteService`. This service fulfils the following contract:
 
@@ -64,7 +64,7 @@ Again, a bit of shorthand using a method group, this is equivalent to:
 	.Subscribe(result => DisplayMatches(result));
 
 
-###4. `tag: overlapping_problem`
+### 4. `tag: overlapping_problem`
 
 Now we are going to modify the behaviour of the `IAutoCompleteService` so that alternating calls will take 1 and 4 seconds respectively:
 
@@ -79,7 +79,7 @@ The implementation isn't important here, but have a look if you are interested. 
                                    \---2+
 	Flattened      --------------------2---1--------
 
-###5. `tag: handle_overlapping`
+### 5. `tag: handle_overlapping`
 
 We can solve this by causing each new text event to trigger cancelling the subscription of the previous service call:
 
@@ -96,7 +96,7 @@ Other versions of Rx present a combined operator called `switchMap` which achiev
 
 Notice also that the `ObserveOnDispatcher()` has moved inside the `Select`. More on this later.
 
-###6. `tag: errors_problem`
+### 6. `tag: errors_problem`
 
 Service calls can unfortunately fail from time to time. Here, we have modified `IAutoCompleteService` so that it will throw an exception after a second:
 
@@ -107,7 +107,7 @@ Service calls can unfortunately fail from time to time. Here, we have modified `
 
 Try calling the service, and the application will crash with an `ApplicationException`.
 
-###7. `tag:handle_errors`
+### 7. `tag:handle_errors`
 
 To address this, we could add an `OnError` handler to our `Subscribe` method:
 
@@ -131,7 +131,7 @@ Instead, we introduce the Rx equivalent of a try...catch... It's a bit different
 Run the code now, and you'll get a message about the error in the `Results` ListView.
 
 
-###8. `tag: timeout_problem`
+### 8. `tag: timeout_problem`
 
 Services can misbehave in other ways - they might take too long to respond, or never respond. Here we adjust the service so that it alternates between responding it 1 and 10 seconds respectively:
 
@@ -142,7 +142,7 @@ Services can misbehave in other ways - they might take too long to respond, or n
 
 Now try running the code and issuing a couple of queries. Waiting indefinitely for a response makes for a frustrating user experience; we can do better!
 
-###9. `tag: handle_timeout`
+### 9. `tag: handle_timeout`
 
 We can use the aptly named `Timeout` operator to solve this. Similar to the `Catch` operator, we provide an alternative stream to return in the event the observed stream takes too long to emit an event:
 
@@ -159,7 +159,7 @@ We can use the aptly named `Timeout` operator to solve this. Similar to the `Cat
 
 Run this and see the difference. Queries return in 2 seconds, or an appropriate message is shown.
 
-###10. `tag: transient_problem`
+### 10. `tag: transient_problem`
 
 Sometimes services fail once in a while. We now set up our service to succeed only on every third attempt:
 
@@ -172,7 +172,7 @@ Run this code, and enter in `a`, wait for the response (an error), then add `b`,
 
 In the event of failure, we might like to resubmit the query instead.
 
-###11. `tag: handle_transient_attempt`
+### 11. `tag: handle_transient_attempt`
 
 Rx offers the `Retry` operator. This accepts a number and will resubscribe to it's observable up to that many times when it encounters an `OnError`, before giving up and letting the `OnError` through. We can apply it like this:
 
@@ -188,7 +188,7 @@ Rx offers the `Retry` operator. This accepts a number and will resubscribe to it
 
 If you run the code now though, nothing has changed! What's going on? What's happened is that the `ToObservable()` is returning the *same* result stream to each subscriber. This is by design - in the event that multiple subscriptions are made, every subscriber shares the result. It's not want we want here though. We want the task itself to be reissued on each subscription.
 
-###12. `tag: handle_transient`
+### 12. `tag: handle_transient`
 
 We can do this by using `Observable.FromAsync` to convert our task instead:
 
@@ -196,7 +196,7 @@ We can do this by using `Observable.FromAsync` to convert our task instead:
 
 Run the code now to see that even the first query will return a successful response.
 
-###13. `tag: overload_problem`
+### 13. `tag: overload_problem`
 
 Things are starting to look good. Let's make our service reliable again, with a 1 second response time:
 
@@ -206,7 +206,7 @@ Things are starting to look good. Let's make our service reliable again, with a 
 
 Notice that as things stand, we issue a request to the service every time the text changes. If our users are typing at 30 WPM, that could quickly add up to a lot of calls. We should simmer things down a bit by throttling the response.
 
-###14. `tag: handle_overload`
+### 14. `tag: handle_overload`
 
 We can use the `Throttle` operator for this:
 
@@ -222,7 +222,7 @@ The observant amongst you will have noticed that `ObserveOnDispatcher` has been 
 
 Note that `Throttle` is called `Debounce` in other Rx implementations (which is a better name for it), and in those implementations `Throttle` acts as a rate limiter, with an event being released no faster than the rate of the given `TimeSpan` rather than with continual suppression. See a demo of the difference [here](http://demo.nimius.net/debounce_throttle/). In this demo `Debounce` is like the `Throttle` we use here.
 
-###15. `tag: handle_filtering`
+### 15. `tag: handle_filtering`
 
 Finally, a bit of tidying up. When a text event clears the throttle, we'd like to clear out the Results from the previous query. We can do this with a side effect operator, `Do`. This needs the `ObserveOnDispatcher` that precedes it, because we are updating the UI. Also, we  use a `Where` filter to suppress text events with 2 or less characters - supposing that these might return too many results in a real service. Finally, if an event passes the `Where` filter we set a waiting message in the UI. Our final stream looks like this:
 
