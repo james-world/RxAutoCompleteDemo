@@ -18,8 +18,7 @@ namespace RxAutoCompleteDemo
     {
         private readonly IAutoCompleteService _autoCompleteService =
             new InMemoryAutoCompleteService(
-                new RoundRobinDelayStrategy(1.Seconds()),
-                new SucceedEveryNTriesReliabilityStrategy(3));
+                new RoundRobinDelayStrategy(1.Seconds()));
 
         public MainWindow()
         {
@@ -27,13 +26,12 @@ namespace RxAutoCompleteDemo
 
             Observable.FromEventPattern<TextChangedEventArgs>(Input, "TextChanged")
                 .Select(@event => ((TextBox) @event.Sender).Text)                
-                .Select(term => Observable.FromAsync(() => _autoCompleteService.Query(term))
+                .SelectMany(term => Observable.FromAsync(() => _autoCompleteService.Query(term))
                     .Timeout(2.Seconds(), Observable.Return(AutoCompleteResult.ErrorResult(term, "timed out")))
                     .Retry(3)
                     .Catch(Observable.Return(AutoCompleteResult.ErrorResult(term)))
                     .ObserveOnDispatcher()
                 )
-                .Switch()
                 .Subscribe(DisplayMatches);
         }
 
