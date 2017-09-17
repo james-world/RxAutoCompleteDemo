@@ -16,7 +16,8 @@ namespace RxAutoCompleteDemo
     public partial class MainWindow : Window
     {
         private readonly IAutoCompleteService _autoCompleteService =
-            new InMemoryAutoCompleteService();
+            new InMemoryAutoCompleteService(
+                new RoundRobinDelayStrategy(1.Seconds(), 4.Seconds()));
 
         public MainWindow()
         {
