@@ -18,7 +18,8 @@ namespace RxAutoCompleteDemo
     {
         private readonly IAutoCompleteService _autoCompleteService =
             new InMemoryAutoCompleteService(
-                new RoundRobinDelayStrategy(1.Seconds(), 4.Seconds()));
+                new RoundRobinDelayStrategy(1.Seconds()),
+                new AlwaysFailReliabilityStrategy());
 
         public MainWindow()
         {
