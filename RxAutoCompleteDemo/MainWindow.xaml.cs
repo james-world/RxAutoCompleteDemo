@@ -25,7 +25,8 @@ namespace RxAutoCompleteDemo
             InitializeComponent();
 
             Observable.FromEventPattern<TextChangedEventArgs>(Input, "TextChanged")
-                .Select(@event => ((TextBox) @event.Sender).Text)                
+                .Select(@event => ((TextBox) @event.Sender).Text)
+                .Throttle(0.5.Seconds()).ObserveOnDispatcher()
                 .SelectMany(term => Observable.FromAsync(() => _autoCompleteService.Query(term))
                     .Timeout(2.Seconds(), Observable.Return(AutoCompleteResult.ErrorResult(term, "timed out")))
                     .Retry(3)
