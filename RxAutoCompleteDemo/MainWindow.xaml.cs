@@ -1,28 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Humanizer;
+using RxAutoCompleteDemo.Model;
+using RxAutoCompleteDemo.Services;
 
 namespace RxAutoCompleteDemo
 {
+    /// <inheritdoc cref="Window" />
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly IAutoCompleteService _autoCompleteService =
+            new InMemoryAutoCompleteService();
+
         public MainWindow()
         {
             InitializeComponent();
+
+        }
+
+        private void DisplayMatches(AutoCompleteResult result)
+        {
+            Results.Items.Clear();
+            foreach (var match in result.Matches)
+                Results.Items.Add(match);
+        }
+
+        private void ClearMatches()
+        {
+            Results.Items.Clear();
+        }
+
+        private void SetWaiting()
+        {
+            Results.Items.Clear();
+            Results.Items.Add("Querying...");
         }
     }
 }

@@ -5,8 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RxAutoCompleteDemo"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
+        Title="MainWindow" Height="350" Width="520">
+    <Grid local:ScaleToWindowSizeBehavior.Denominators="100, 160"
+          local:ScaleToWindowSizeBehavior.ParentWindow="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBox x:Name="Input" Grid.Row="0"></TextBox>
+        <ListView x:Name="Results" Grid.Row="1" MinHeight="100" VerticalAlignment="Stretch" IsEnabled="False"></ListView>
     </Grid>
 </Window>
+
